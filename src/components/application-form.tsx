@@ -21,8 +21,12 @@ import {
   createApplication,
   uploadResumeFile,
 } from "@/lib/actions/application.action";
-import { ApplicationStatus } from "@/lib/domains/applications.domain";
+import {
+  Application,
+  ApplicationStatus,
+} from "@/lib/domains/applications.domain";
 import { getProfileById } from "@/lib/actions/profile.action";
+import { Progress } from "@/components/ui/progress";
 
 interface ApplicationFormProps {
   jobId: string;
@@ -39,6 +43,8 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
   const [fullName, setFullName] = useState("");
   const [experience, setExperience] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Status states
   const [error, setError] = useState("");
@@ -101,31 +107,43 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
       let resumeUrl = "";
       if (resumeFile) {
         try {
-          // Set message about uploading
-          setError("Uploading resume... Please wait.");
+          // Start upload progress indication
+          setIsUploading(true);
+          setUploadProgress(10);
 
           // Convert file to ArrayBuffer for server upload
           const fileBuffer = await resumeFile.arrayBuffer();
+
+          // Update progress to show we've read the file and sending it
+          setUploadProgress(30);
 
           // Use server action to upload file
           const uploadResult = await uploadResumeFile(
             user.uid,
             resumeFile.name,
-            fileBuffer, // Pass ArrayBuffer directly, not Buffer.from()
+            fileBuffer,
             resumeFile.type
           );
+
+          // Update progress to show upload is complete
+          setUploadProgress(100);
 
           if (!uploadResult.success) {
             throw new Error(uploadResult.error || "Failed to upload resume");
           }
 
           resumeUrl = uploadResult.url;
-          setError(""); // Clear the message
         } catch (uploadError) {
           console.error("Resume upload error:", uploadError);
           setError("Failed to upload resume. Please try again.");
           setIsSubmitting(false);
+          setIsUploading(false);
           return;
+        } finally {
+          // Hide the progress bar after a moment
+          setTimeout(() => {
+            setIsUploading(false);
+          }, 500);
         }
       }
 
@@ -153,7 +171,6 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
 
       // Create the application in Firestore with the resume URL
       const response = await createApplication({
-        id: "", // This will be assigned by Firestore
         job_id: jobId,
         user_id: user.uid,
         phone_number: phone,
@@ -161,7 +178,7 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
         resume_path: resumeUrl, // Use the Firebase Storage URL from server
         additional_information: additionalInfo,
         status: ApplicationStatus.PENDING,
-      });
+      } as Application);
 
       if (response.success) {
         setSuccess(true);
@@ -316,6 +333,15 @@ export default function ApplicationForm({ jobId }: ApplicationFormProps) {
             {resumeFile ? resumeFile.name : "Upload Resume"}
           </Button>
         </div>
+
+        {/* Show upload progress bar when uploading */}
+        {isUploading && (
+          <div className="mt-2">
+            <p className="text-xs text-primary mb-1">Uploading resume...</p>
+            <Progress value={uploadProgress} className="h-2" />
+          </div>
+        )}
+
         <p className="text-xs text-muted-foreground">
           Accepted formats: PDF, DOC, DOCX (Max 5MB)
         </p>

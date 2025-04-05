@@ -216,13 +216,19 @@ export async function listApplications(
     try {
         const db = getDb();
         const applicationsCollection = 'Applications';
+        console.log("Listing applications with params:", filterParams);
         const { jobId, userId, status, limit = 20 } = filterParams;
         // Create base query
         let query = db.collection(applicationsCollection)
-            .where('user_id', '==', userId)
-            .where('job_id', '==', jobId)
             .limit(limit);
 
+        if (userId) {
+            query = query.where('user_id', '==', userId);
+        }
+
+        if (jobId) {
+            query = query.where('job_id', '==', jobId);
+        }
 
         if (status) {
             query = query.where('status', '==', status);
@@ -258,10 +264,11 @@ export async function listApplications(
  */
 export async function getJobApplications(
     jobId: string,
+    userId?: string,
     limit: number = 20,
     status?: ApplicationStatus
 ): Promise<ApplicationsResponse> {
-    return listApplications({ jobId, limit, status });
+    return listApplications({ jobId, userId, limit, status });
 }
 
 /**
@@ -284,7 +291,19 @@ export async function updateApplicationStatus(
     userId?: string
 ): Promise<ApplicationResponse> {
     try {
-        return await updateApplication(applicationId, { status }, userId);
+        // Make sure we have a valid status
+        if (!status || !Object.values(ApplicationStatus).includes(status)) {
+            return {
+                success: false,
+                error: "Invalid application status"
+            };
+        }
+
+        // Create a valid update payload with just the status
+        const updateData: Partial<Application> = { status };
+
+        // Call updateApplication with the validated payload
+        return await updateApplication(applicationId, updateData, userId);
     } catch (error) {
         console.error("Error updating application status:", error);
         return {
