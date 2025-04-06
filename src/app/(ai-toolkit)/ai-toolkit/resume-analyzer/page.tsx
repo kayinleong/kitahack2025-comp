@@ -15,64 +15,20 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, FileText, Loader2, Check, AlertCircle } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  analyzeResume,
+  AnalysisResult,
+} from "@/lib/actions/resume-analyzer.action";
+import { toast } from "sonner";
 
 export default function ResumeAnalyzerPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(
+    null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Mock analysis results
-  const analysisResults = {
-    score: 78,
-    summary:
-      "Your resume is well-structured but could benefit from more quantifiable achievements and better keyword optimization for ATS systems.",
-    strengths: [
-      "Clear chronological format",
-      "Good use of action verbs",
-      "Relevant skills section",
-      "Appropriate length (1 page)",
-    ],
-    improvements: [
-      "Add more quantifiable achievements (numbers, percentages, metrics)",
-      "Optimize keywords for ATS systems",
-      "Strengthen your professional summary",
-      "Add more technical skills relevant to your target positions",
-    ],
-    sectionFeedback: {
-      header: {
-        score: 85,
-        feedback:
-          "Contact information is complete and well-formatted. Consider adding your LinkedIn profile and GitHub if applicable.",
-      },
-      summary: {
-        score: 70,
-        feedback:
-          "Your professional summary is too generic. Make it more specific to your target role and highlight your unique value proposition.",
-      },
-      experience: {
-        score: 75,
-        feedback:
-          "Good use of action verbs, but many of your bullet points lack measurable achievements. Try to quantify your impact where possible.",
-      },
-      education: {
-        score: 90,
-        feedback:
-          "Education section is well-formatted and includes relevant information.",
-      },
-      skills: {
-        score: 80,
-        feedback:
-          "Good range of skills, but consider organizing them by category and adding proficiency levels.",
-      },
-    },
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -84,27 +40,38 @@ export default function ResumeAnalyzerPage() {
     fileInputRef.current?.click();
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!file) return;
 
-    setIsUploading(true);
+    try {
+      setIsUploading(true);
 
-    // Simulate upload
-    setTimeout(() => {
+      // Create FormData and append file
+      const formData = new FormData();
+      formData.append("resume", file);
+
+      // Upload and start analysis
       setIsUploading(false);
       setIsAnalyzing(true);
 
-      // Simulate analysis
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        setAnalysisComplete(true);
-      }, 3000);
-    }, 1500);
+      // Call server action to analyze resume
+      const results = await analyzeResume(formData);
+
+      setAnalysisResults(results);
+      setIsAnalyzing(false);
+      setAnalysisComplete(true);
+    } catch (error) {
+      console.error("Error analyzing resume:", error);
+      toast("There was an error analyzing your resume. Please try again.");
+      setIsUploading(false);
+      setIsAnalyzing(false);
+    }
   };
 
   const resetAnalysis = () => {
     setFile(null);
     setAnalysisComplete(false);
+    setAnalysisResults(null);
   };
 
   const getSectionScoreColor = (score: number) => {
@@ -201,14 +168,14 @@ export default function ResumeAnalyzerPage() {
                 <CardTitle>Resume Analysis Results</CardTitle>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold">
-                    {analysisResults.score}/100
+                    {analysisResults?.score}/100
                   </span>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="mb-6 p-4 bg-muted rounded-lg">
-                <p>{analysisResults.summary}</p>
+                <p>{analysisResults?.summary}</p>
               </div>
 
               <Tabs defaultValue="overview">
@@ -225,7 +192,7 @@ export default function ResumeAnalyzerPage() {
                       Strengths
                     </h3>
                     <ul className="list-disc pl-5 space-y-1">
-                      {analysisResults.strengths.map((strength, index) => (
+                      {analysisResults?.strengths.map((strength, index) => (
                         <li key={index}>{strength}</li>
                       ))}
                     </ul>
@@ -237,7 +204,7 @@ export default function ResumeAnalyzerPage() {
                       Areas for Improvement
                     </h3>
                     <ul className="list-disc pl-5 space-y-1">
-                      {analysisResults.improvements.map(
+                      {analysisResults?.improvements.map(
                         (improvement, index) => (
                           <li key={index}>{improvement}</li>
                         )
@@ -247,91 +214,48 @@ export default function ResumeAnalyzerPage() {
                 </TabsContent>
 
                 <TabsContent value="sections" className="space-y-4">
-                  {Object.entries(analysisResults.sectionFeedback).map(
-                    ([section, data]) => (
-                      <div key={section} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="font-semibold capitalize">
-                            {section}
-                          </h3>
-                          <span
-                            className={`font-bold ${getSectionScoreColor(
-                              data.score
-                            )}`}
-                          >
-                            {data.score}/100
-                          </span>
+                  {analysisResults &&
+                    Object.entries(analysisResults.sectionFeedback).map(
+                      ([section, data]) => (
+                        <div key={section} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-semibold capitalize">
+                              {section}
+                            </h3>
+                            <span
+                              className={`font-bold ${getSectionScoreColor(
+                                data.score
+                              )}`}
+                            >
+                              {data.score}/100
+                            </span>
+                          </div>
+                          <p className="text-sm">{data.feedback}</p>
                         </div>
-                        <p className="text-sm">{data.feedback}</p>
-                      </div>
-                    )
-                  )}
+                      )
+                    )}
                 </TabsContent>
 
                 <TabsContent value="keywords" className="space-y-4">
                   <div className="border rounded-lg p-4">
-                    <h3 className="font-semibold mb-2">Recommended Keywords</h3>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <TooltipProvider>
-                        {[
-                          "project management",
-                          "agile",
-                          "scrum",
-                          "stakeholder",
-                          "cross-functional",
-                          "leadership",
-                          "strategic planning",
-                          "KPIs",
-                          "analytics",
-                          "optimization",
-                        ].map((keyword) => (
-                          <Tooltip key={keyword}>
-                            <TooltipTrigger asChild>
-                              <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-                                {keyword}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Add this keyword to improve ATS matching</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </TooltipProvider>
-                    </div>
-
-                    <h3 className="font-semibold mb-2">
-                      Missing Important Keywords
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      <TooltipProvider>
-                        {[
-                          "ROI",
-                          "budget management",
-                          "resource allocation",
-                          "risk assessment",
-                          "JIRA",
-                        ].map((keyword) => (
-                          <Tooltip key={keyword}>
-                            <TooltipTrigger asChild>
-                              <div className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm">
-                                {keyword}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                This keyword is missing but relevant to your
-                                target roles
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </TooltipProvider>
+                    <h3 className="font-semibold mb-2">Keywords Analysis</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This section provides insights about keywords in your
+                      resume based on the AI analysis.
+                    </p>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p>
+                        Based on your target role and industry, consider adding
+                        more relevant keywords to improve ATS compatibility. See
+                        your &quot;Areas for Improvement&quot; section for
+                        specific guidance.
+                      </p>
                     </div>
                   </div>
                 </TabsContent>
               </Tabs>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-col sm:flex-row gap-3 w-full">
               <Button onClick={resetAnalysis} className="w-full">
                 Analyze Another Resume
               </Button>

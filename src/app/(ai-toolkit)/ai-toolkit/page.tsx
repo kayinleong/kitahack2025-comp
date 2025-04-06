@@ -7,8 +7,9 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Mic, FileText, ArrowRight } from "lucide-react";
+import { Mic, FileText, ArrowRight, History } from "lucide-react";
 import Image from "next/image";
+import ResumeAnalysisHistory from "@/components/resume-analysis/resume-analysis-history";
 
 export default function AIToolkitPage() {
   return (
@@ -92,14 +93,22 @@ export default function AIToolkitPage() {
               <li>Industry-specific recommendations</li>
               <li>Keyword optimization for ATS systems</li>
             </ul>
-            <Button asChild className="w-full">
-              <Link
-                href="/ai-toolkit/resume-analyzer"
-                className="flex items-center justify-between"
-              >
-                Analyze My Resume <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
+            <div className="flex space-x-2 mb-4">
+              <Button asChild className="flex-1">
+                <Link
+                  href="/ai-toolkit/resume-analyzer"
+                  className="flex items-center justify-between"
+                >
+                  Analyze My Resume <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </Button>
+              <ResumeAnalysisHistory>
+                <Button variant="outline" className="flex items-center">
+                  <History className="h-4 w-4 mr-2" />
+                  History
+                </Button>
+              </ResumeAnalysisHistory>
+            </div>
           </CardContent>
         </Card>
       </div>
