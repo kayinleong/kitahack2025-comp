@@ -2,9 +2,11 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "./highlight.css"; // Add this line
 import Header from "@/components/header";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/contexts/auth-context";
+import ChatWidget from "@/components/chat/chat-widget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           <Header />
           <main className="min-h-screen pt-16">{children}</main>
-
+          <ChatWidget />
           <Toaster />
         </AuthProvider>
       </body>

@@ -2,9 +2,9 @@ import { filterJobs, listJobs } from "@/lib/actions/job.action";
 import { JobStatus } from "@/lib/domains/jobs.domain";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Skeleton } from "./ui/skeleton";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Skeleton } from "../ui/skeleton";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 export default async function JobList({
   searchParams,

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import JobList from "@/components/job-list";
-import JobFilters from "@/components/job-filters";
+import JobList from "@/components/jobs/job-list";
+import JobFilters from "@/components/jobs/job-filters";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function JobsPage({

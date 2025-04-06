@@ -8,6 +8,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Mic, FileText, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 export default function AIToolkitPage() {
   return (
@@ -30,8 +31,10 @@ export default function AIToolkitPage() {
           </CardHeader>
           <CardContent className="pt-4">
             <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4">
-              <img
-                src="/placeholder.svg?height=300&width=500"
+              <Image
+                src="/600x400.svg"
+                width={600}
+                height={400}
                 alt="AI Interview"
                 className="object-cover rounded-md"
               />
@@ -70,9 +73,11 @@ export default function AIToolkitPage() {
           </CardHeader>
           <CardContent className="pt-4">
             <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-4">
-              <img
-                src="/placeholder.svg?height=300&width=500"
-                alt="Resume Analysis"
+              <Image
+                src="/600x400.svg"
+                width={600}
+                height={400}
+                alt="Resume Analyzer"
                 className="object-cover rounded-md"
               />
             </div>

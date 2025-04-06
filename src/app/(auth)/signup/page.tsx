@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Briefcase } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import SignupForm from "@/components/signup-form";
+import SignupForm from "@/components/auth/signup-form";
 
 export const metadata: Metadata = {
   title: "Sign Up | KL2PEN",

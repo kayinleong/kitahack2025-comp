@@ -9,7 +9,7 @@ import {
 } from "@/lib/domains/applications.domain";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import JobApplicationsList from "@/components/job-applications-list";
+import JobApplicationsList from "@/components/jobs/job-applications-list";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 

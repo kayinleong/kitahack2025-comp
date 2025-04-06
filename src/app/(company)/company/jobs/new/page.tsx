@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import NewJobForm from "@/components/new-job-form";
+import NewJobForm from "@/components/jobs/new-job-form";
 
 export const metadata: Metadata = {
   title: "Post a New Job | KL2PEN",

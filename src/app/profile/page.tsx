@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { validateSession } from "@/lib/actions/auth.action";
-import ProfileForm from "@/components/profile-form";
+import ProfileForm from "@/components/profile/profile-form";
 
 export const metadata: Metadata = {
   title: "Profile | KL2PEN",

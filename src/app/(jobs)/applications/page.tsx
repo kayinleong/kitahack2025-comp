@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import UserApplicationsContainer from "@/components/user-applications-container";
+import UserApplicationsContainer from "@/components/applications/user-applications-container";
 
 export default function ApplicationsPage() {
   return (

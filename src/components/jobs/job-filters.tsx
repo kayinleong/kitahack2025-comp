@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Label } from "./ui/label";
-import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
-import { Slider } from "./ui/slider";
+import { Label } from "../ui/label";
+import { Checkbox } from "../ui/checkbox";
+import { Button } from "../ui/button";
+import { Slider } from "../ui/slider";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function JobFilters() {

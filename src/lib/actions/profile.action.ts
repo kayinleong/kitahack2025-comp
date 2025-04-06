@@ -2,8 +2,8 @@
 
 import { getFirestore } from "firebase-admin/firestore";
 import { Profile } from "@/lib/domains/profile.domain";
-import admin from "@/lib/firebase/server";
 import { convertTimestamps } from "../timestamp";
+import admin from "../firebase/server";
 
 // Helper function to get Firestore instance
 function getDb() {

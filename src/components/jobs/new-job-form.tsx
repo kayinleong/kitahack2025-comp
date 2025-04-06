@@ -37,9 +37,9 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
-import { Badge } from "./ui/badge";
-import { Card, CardContent } from "./ui/card";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Badge } from "../ui/badge";
+import { Card, CardContent } from "../ui/card";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { cn } from "@/lib/utils";
 
 // Define the form schema

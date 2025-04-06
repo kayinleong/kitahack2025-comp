@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getJobById } from "@/lib/actions/job.action";
 import { notFound } from "next/navigation";
-import JobApplicationsContainer from "@/components/job-applications-container";
+import JobApplicationsContainer from "@/components/jobs/job-applications-container";
 
 export default async function JobApplicationsPage({
   params,

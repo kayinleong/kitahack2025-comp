@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Icons } from "@/components/icons";
 import { toast } from "sonner";
+import { Profile } from "@/lib/domains/profile.domain";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -79,7 +80,7 @@ export default function SignupForm() {
         gender: 0, // Default value, can be updated later
         university: "", // Default value, can be updated later
         role: values.role, // Set the user role
-      });
+      } as Profile);
 
       if (!profileResult.success) {
         console.error("Profile creation error:", profileResult.error);

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
-import CompanyJobsList from "@/components/company-jobs-list";
+import CompanyJobsList from "@/components/jobs/company-jobs-list";
 
 export default function CompanyJobsPage() {
   return (

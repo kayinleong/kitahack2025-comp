@@ -5,7 +5,7 @@ import { getJobById } from "@/lib/actions/job.action";
 import { validateSession } from "@/lib/actions/auth.action";
 import { notFound, redirect } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import EditJobForm from "@/components/edit-job-form";
+import EditJobForm from "@/components/jobs/edit-job-form";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return {

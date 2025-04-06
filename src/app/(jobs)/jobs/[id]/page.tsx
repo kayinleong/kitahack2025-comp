@@ -11,7 +11,7 @@ import {
   DollarSign,
   Globe,
 } from "lucide-react";
-import ApplicationForm from "@/components/application-form";
+import ApplicationForm from "@/components/applications/application-form";
 import { getJobById } from "@/lib/actions/job.action";
 import { notFound } from "next/navigation";
 import Image from "next/image";
