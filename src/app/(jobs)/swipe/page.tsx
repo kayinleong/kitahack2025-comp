@@ -35,12 +35,15 @@ import {
   getLikedJobs,
   getDislikedJobs,
   getUserSwipes,
+  analyzeUserPreferences,
+  getAnalysisResult,
 } from "@/lib/actions/job-swipe.action";
 import { Job, JobStatus } from "@/lib/domains/jobs.domain";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 export default function JobSwipePage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, profile, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [displayJobs, setDisplayJobs] = useState<Job[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,6 +51,9 @@ export default function JobSwipePage() {
   const [swipeInProgress, setSwipeInProgress] = useState(false);
   const [likedJobIds, setLikedJobIds] = useState<string[]>([]);
   const [dislikedJobIds, setDislikedJobIds] = useState<string[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false); // Add loading state for analysis
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Ref to store the debounce timeout
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
@@ -121,9 +127,29 @@ export default function JobSwipePage() {
     }
 
     if (user) {
+      // Fetch jobs and initialize swipes
       fetchJobsAndInitSwipes();
+
+      // Fetch the last analysis result
+      getAnalysisResult(user.uid).then(({ analysis, error }) => {
+        if (analysis) {
+          setAnalysisResult(analysis); // Set the last analysis result
+        } else if (error) {
+          console.error("Error fetching analysis result:", error);
+        } else {
+          setAnalysisResult("No analysis result available yet."); // Default message if no result exists
+        }
+      });
     }
   }, [user, authLoading, router, fetchJobsAndInitSwipes]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current); // Clear timeout on component unmount
+      }
+    };
+  }, []);
 
   const handleDragEnd = (
     event: MouseEvent | TouchEvent | PointerEvent,
@@ -146,7 +172,7 @@ export default function JobSwipePage() {
     setSwipeInProgress(true);
 
     try {
-      if (user) {
+      if (user && profile) {
         const response = await likeJob(user.uid, job.id);
         if (!response.success) {
           toast(response.error || "Failed to save your preference");
@@ -154,7 +180,33 @@ export default function JobSwipePage() {
       }
 
       // Update local state
-      setLikedJobIds((prev) => [...prev, job.id]);
+      setLikedJobIds((prev) => {
+        const updated = [...prev, job.id];
+        const totalIds = updated.length + dislikedJobIds.length;
+
+        if (totalIds >= 3 && profile) {
+          if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current); // Clear the previous timeout
+          }
+
+          debounceTimeout.current = setTimeout(() => {
+            setLoadingAnalysis(true); // Start loading state
+            analyzeUserPreferences(user!.uid, profile.name).then(
+              ({ analysis, error }) => {
+                setLoadingAnalysis(false); // Stop loading state
+                if (analysis) {
+                  setAnalysisResult(analysis); // Display the actual analysis result
+                  toast.success("Preference Analysis Updated");
+                } else if (error) {
+                  console.error("Preference Analysis Error:", error);
+                }
+              }
+            );
+          }, 3000); // Debounce time of 3 seconds
+        }
+
+        return updated;
+      });
       setCurrentIndex(currentIndex + 1);
     } catch (error) {
       console.error("Error liking job:", error);
@@ -171,7 +223,7 @@ export default function JobSwipePage() {
     setSwipeInProgress(true);
 
     try {
-      if (user) {
+      if (user && profile) {
         const response = await dislikeJob(user.uid, job.id);
         if (!response.success) {
           toast(response.error || "Failed to save your preference");
@@ -179,7 +231,33 @@ export default function JobSwipePage() {
       }
 
       // Update local state
-      setDislikedJobIds((prev) => [...prev, job.id]);
+      setDislikedJobIds((prev) => {
+        const updated = [...prev, job.id];
+        const totalIds = likedJobIds.length + updated.length;
+
+        if (totalIds >= 3 && profile) {
+          if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current); // Clear the previous timeout
+          }
+
+          debounceTimeout.current = setTimeout(() => {
+            setLoadingAnalysis(true); // Start loading state
+            analyzeUserPreferences(user!.uid, profile.name).then(
+              ({ analysis, error }) => {
+                setLoadingAnalysis(false); // Stop loading state
+                if (analysis) {
+                  setAnalysisResult(analysis); // Display the actual analysis result
+                  toast.success("Preference Analysis Updated");
+                } else if (error) {
+                  console.error("Preference Analysis Error:", error);
+                }
+              }
+            );
+          }, 3000); // Debounce time of 3 seconds
+        }
+
+        return updated;
+      });
       setCurrentIndex(currentIndex + 1);
     } catch (error) {
       console.error("Error disliking job:", error);
@@ -223,209 +301,185 @@ export default function JobSwipePage() {
     );
   }
 
-  // Empty state when no jobs are available
-  if (displayJobs.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        {/* Pink themed header */}
-        <div className="relative mb-10 text-center md:text-left">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-pink-100 rounded-full opacity-60 -z-10"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-200 rounded-full opacity-40 -z-10"></div>
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
-            JOB FINDER
-            <Sparkles className="h-4 w-4 ml-2 text-pink-500" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 mb-4">
-            Job <span className="text-pink-600">Swipe</span>
-          </h1>
-          <p className="text-slate-600 max-w-2xl">
-            Find your perfect job match with our intuitive swipe interface.
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center justify-center h-[500px] text-center">
-          <div className="bg-white p-8 rounded-2xl shadow-md border border-pink-100 max-w-md">
-            <h2 className="text-2xl font-bold mb-4 text-slate-800">
-              No more jobs to show!
-            </h2>
-            <p className="text-slate-600 mb-6">
-              You&apos;ve reviewed all available jobs.
-            </p>
-            <Button
-              onClick={handleRefresh}
-              className="bg-pink-600 hover:bg-pink-700 text-white"
-            >
-              Refresh Jobs
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const currentJob = displayJobs[currentIndex];
   const isFinished = currentIndex >= displayJobs.length;
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      {/* Pink themed header */}
-      <div className="relative mb-10 text-center md:text-left">
-        <div className="absolute top-0 right-0 w-20 h-20 bg-pink-100 rounded-full opacity-60 -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-200 rounded-full opacity-40 -z-10"></div>
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
-          JOB FINDER
-          <Sparkles className="h-4 w-4 ml-2 text-pink-500" />
-        </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 mb-4">
-          Job <span className="text-pink-600">Swipe</span>
-        </h1>
-        <p className="text-slate-600 max-w-2xl">
-          Swipe right for jobs you like, left for those you don&apos;t
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center justify-center">
-        <div
-          className="relative w-full max-w-md h-[500px] mx-auto"
-          ref={dragConstraintsRef}
-        >
-          {isFinished ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <h2 className="text-2xl font-bold mb-4">No more jobs to show!</h2>
-              <p className="text-muted-foreground mb-6">
-                You&apos;ve liked {likedJobIds.length} jobs and disliked{" "}
-                {dislikedJobIds.length} jobs.
-              </p>
-              <Button onClick={handleRefresh}>Refresh Jobs</Button>
-            </div>
-          ) : (
-            <motion.div
-              className="absolute w-full h-full"
-              drag="x"
-              dragConstraints={dragConstraintsRef}
-              onDragEnd={handleDragEnd}
-              style={{ x, rotate, opacity: cardOpacity }}
-              whileTap={{ cursor: "grabbing" }}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">Job Swipe</h1>
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex-1">
+          <div className="flex flex-col items-center justify-center">
+            <div
+              className="relative w-full max-w-md h-[500px] mx-auto"
+              ref={dragConstraintsRef}
             >
-              <Card className="w-full h-full overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <motion.div
-                    className="bg-green-500 text-white text-2xl font-bold rounded-full p-6 rotate-12"
-                    style={{ opacity: likeOpacity }}
-                  >
-                    LIKE
-                  </motion.div>
-                  <motion.div
-                    className="bg-red-500 text-white text-2xl font-bold rounded-full p-6 -rotate-12"
-                    style={{ opacity: dislikeOpacity }}
-                  >
-                    PASS
-                  </motion.div>
+              {isFinished ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <h2 className="text-2xl font-bold mb-4">
+                    No more jobs to show!
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    You&apos;ve liked {likedJobIds.length} jobs and disliked{" "}
+                    {dislikedJobIds.length} jobs.
+                  </p>
+                  <Button onClick={handleRefresh}>Refresh Jobs</Button>
                 </div>
-
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl">{currentJob.title}</CardTitle>
-                  <div className="flex items-center text-muted-foreground">
-                    <Building className="h-4 w-4 mr-1" />
-                    <span>{currentJob.company_name}</span>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4 overflow-auto max-h-[300px]">
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{currentJob.company_location}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>
-                        {formatSalary(
-                          currentJob.minimum_salary,
-                          currentJob.maximum_salary
-                        )}
-                      </span>
-                    </div>
-                    <div className="flex items-center">
-                      <Briefcase className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span>{currentJob.type}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {currentJob.is_remote && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-green-100 text-green-800 hover:bg-green-200"
+              ) : (
+                <motion.div
+                  className="absolute w-full h-full"
+                  drag="x"
+                  dragConstraints={dragConstraintsRef}
+                  onDragEnd={handleDragEnd}
+                  style={{ x, rotate, opacity: cardOpacity }}
+                  whileTap={{ cursor: "grabbing" }}
+                >
+                  <Card className="w-full h-full overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <motion.div
+                        className="bg-green-500 text-white text-2xl font-bold rounded-full p-6 rotate-12"
+                        style={{ opacity: likeOpacity }}
                       >
-                        Remote
-                      </Badge>
-                    )}
-                    {Object.values(currentJob.required_skills).map((tag) => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold mb-1">Description</h3>
-                    <div className="text-sm max-h-[120px] overflow-auto pr-2">
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: currentJob.description,
-                        }}
-                      />
+                        LIKE
+                      </motion.div>
+                      <motion.div
+                        className="bg-red-500 text-white text-2xl font-bold rounded-full p-6 -rotate-12"
+                        style={{ opacity: dislikeOpacity }}
+                      >
+                        PASS
+                      </motion.div>
                     </div>
-                  </div>
-                </CardContent>
 
-                <CardFooter className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent pt-16 pb-4">
-                  <div className="flex justify-between w-full">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="rounded-full h-14 w-14 bg-white dark:bg-gray-800"
-                      onClick={handleDislike}
-                      disabled={swipeInProgress}
-                    >
-                      {swipeInProgress ? (
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                      ) : (
-                        <ThumbsDown className="h-6 w-6 text-red-500" />
-                      )}
-                      <span className="sr-only">Dislike</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="rounded-full h-14 w-14 bg-white dark:bg-gray-800"
-                      onClick={handleLike}
-                      disabled={swipeInProgress}
-                    >
-                      {swipeInProgress ? (
-                        <Loader2 className="h-6 w-6 animate-spin" />
-                      ) : (
-                        <ThumbsUp className="h-6 w-6 text-green-500" />
-                      )}
-                      <span className="sr-only">Like</span>
-                    </Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            </motion.div>
-          )}
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl">
+                        {currentJob.title}
+                      </CardTitle>
+                      <div className="flex items-center text-muted-foreground">
+                        <Building className="h-4 w-4 mr-1" />
+                        <span>{currentJob.company_name}</span>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4 overflow-auto max-h-[300px]">
+                      <div className="flex flex-wrap gap-4">
+                        <div className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-1 text-muted-foreground" />
+                          <span>{currentJob.company_location}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                          <span>
+                            {formatSalary(
+                              currentJob.minimum_salary,
+                              currentJob.maximum_salary
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Briefcase className="h-4 w-4 mr-1 text-muted-foreground" />
+                          <span>{currentJob.type}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {currentJob.is_remote && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 hover:bg-green-200"
+                          >
+                            Remote
+                          </Badge>
+                        )}
+                        {Object.values(currentJob.required_skills).map(
+                          (tag) => (
+                            <Badge key={tag} variant="secondary">
+                              {tag}
+                            </Badge>
+                          )
+                        )}
+                      </div>
+
+                      <div>
+                        <h3 className="text-sm font-semibold mb-1">
+                          Description
+                        </h3>
+                        <div className="text-sm max-h-[120px] overflow-auto pr-2">
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: currentJob.description,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent pt-16 pb-4">
+                      <div className="flex justify-between w-full">
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="rounded-full h-14 w-14 bg-white dark:bg-gray-800"
+                          onClick={handleDislike}
+                          disabled={swipeInProgress}
+                        >
+                          {swipeInProgress ? (
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                          ) : (
+                            <ThumbsDown className="h-6 w-6 text-red-500" />
+                          )}
+                          <span className="sr-only">Dislike</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="rounded-full h-14 w-14 bg-white dark:bg-gray-800"
+                          onClick={handleLike}
+                          disabled={swipeInProgress}
+                        >
+                          {swipeInProgress ? (
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                          ) : (
+                            <ThumbsUp className="h-6 w-6 text-green-500" />
+                          )}
+                          <span className="sr-only">Like</span>
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              )}
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-muted-foreground mb-2">
+                Swipe right for jobs you like, left for those you don&apos;t
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {isFinished
+                  ? `You've viewed all available jobs`
+                  : `Showing job ${currentIndex + 1} of ${displayJobs.length}`}
+              </p>
+            </div>
+          </div>
         </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-muted-foreground mb-2">
-            Swipe right for jobs you like, left for those you don&apos;t
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {isFinished
-              ? `You've viewed all available jobs`
-              : `Showing job ${currentIndex + 1} of ${displayJobs.length}`}
-          </p>
+        <div className="w-full md:w-1/3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Your Job Preferences</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">
+              {loadingAnalysis ? (
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Analyzing your preferences...</span>
+                </div>
+              ) : (
+                <ReactMarkdown>
+                  {analysisResult || "No analysis result available yet."}
+                </ReactMarkdown>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
