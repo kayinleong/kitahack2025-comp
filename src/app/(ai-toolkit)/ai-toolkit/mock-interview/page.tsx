@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,77 +19,174 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Loader2,
+  Volume2,
+  HelpCircle,
+  Download,
+} from "lucide-react";
+import {
+  generateInterviewQuestions,
+  evaluateInterviewResponses,
+  type InterviewFeedback,
+  type InterviewQuestion,
+  type InterviewSetup,
+} from "@/lib/actions/mock-interview.action";
+import { toast } from "sonner";
+import { useSpeech } from "@/hooks/useSpeech";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useAuth } from "@/lib/contexts/auth-context";
+import { getProfileById } from "@/lib/actions/profile.action";
+import {
+  generateMockInterviewPdf,
+  MockInterviewPdfData,
+} from "@/lib/utils/pdf-generator";
 
 export default function MockInterviewPage() {
   const [step, setStep] = useState<"setup" | "interview" | "feedback">("setup");
-  const [name, setName] = useState("");
-  const [position, setPosition] = useState("");
-  const [experience, setExperience] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [userResponses, setUserResponses] = useState<string[]>([]);
-  const [transcript, setTranscript] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
+  const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
+  const { user } = useAuth();
+  const [userName, setUserName] = useState<string>("");
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
-  // Mock questions based on position
-  const questions = [
-    "Tell me about yourself and your experience in this field.",
-    "Why are you interested in this position?",
-    "Describe a challenging situation you faced at work and how you handled it.",
-    "What are your greatest strengths and weaknesses?",
-    "Where do you see yourself in 5 years?",
-  ];
+  // Speech synthesis
+  const { isSupported, isSpeaking, speak, cancel } = useSpeech();
 
-  // Mock feedback
-  const mockFeedback = {
-    strengths: [
-      "Clear communication style",
-      "Good examples from past experience",
-      "Demonstrated problem-solving skills",
-    ],
-    improvements: [
-      "Could provide more specific metrics and results",
-      "Consider structuring answers using the STAR method",
-      "Elaborate more on technical skills relevant to the position",
-    ],
-    overallScore: 8.2,
+  // Speech recognition
+  const {
+    transcript,
+    isListening,
+    startListening,
+    stopListening,
+    hasRecognitionSupport,
+  } = useSpeechToText();
+
+  // Setup form
+  const setupForm = useForm<InterviewSetup>({
+    defaultValues: {
+      name: "",
+      position: "",
+      experience: "",
+    },
+  });
+
+  // Stop speech when changing questions or steps
+  useEffect(() => {
+    if (isSpeaking) {
+      cancel();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestion, step]);
+
+  // Fetch user profile when component mounts
+  useEffect(() => {
+    async function fetchUserProfile() {
+      if (user?.uid) {
+        try {
+          const { profile } = await getProfileById(user.uid);
+          if (profile) {
+            setUserName(profile.name || "");
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+      }
+    }
+
+    fetchUserProfile();
+  }, [user]);
+
+  const readQuestion = () => {
+    if (questions[currentQuestion]?.question) {
+      speak(questions[currentQuestion].question);
+    }
   };
 
-  const startInterview = () => {
-    if (!name || !position || !experience) return;
-    setStep("interview");
-    setCurrentQuestion(0);
-    setUserResponses([]);
+  const startInterview = async (data: InterviewSetup) => {
+    try {
+      setIsProcessing(true);
+      // Generate questions based on user details
+      const generatedQuestions = await generateInterviewQuestions(data);
+
+      setQuestions(generatedQuestions);
+      setCurrentQuestion(0);
+      setUserResponses([]);
+      setStep("interview");
+    } catch (error) {
+      toast("Failed to generate interview questions. Please try again.");
+      console.error(error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const toggleRecording = () => {
-    if (isRecording) {
+    if (isListening) {
       // Stop recording
+      stopListening();
       setIsRecording(false);
-      // In a real app, this would save the transcript
+
+      // Save transcript to responses
       setUserResponses([...userResponses, transcript]);
-      setTranscript("");
 
       // Move to next question or finish
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
       } else {
-        setIsProcessing(true);
-        // Simulate processing time
-        setTimeout(() => {
-          setIsProcessing(false);
-          setStep("feedback");
-        }, 3000);
+        finishInterview();
       }
     } else {
+      // Stop any ongoing speech
+      if (isSpeaking) {
+        cancel();
+      }
+
       // Start recording
       setIsRecording(true);
-      // In a real app, this would start speech recognition
-      // For demo, we'll simulate with a timeout that adds text
-      const demoText =
-        "This is a simulated response for demonstration purposes. In a real implementation, this would be your actual spoken response transcribed using the Web Speech API.";
-      setTranscript(demoText);
+      startListening();
+    }
+  };
+
+  const finishInterview = async () => {
+    setIsProcessing(true);
+    try {
+      // Extract just the questions from the InterviewQuestion objects
+      const questionTexts = questions.map((q) => q.question);
+
+      const interviewFeedback = await evaluateInterviewResponses({
+        ...setupForm.getValues(),
+        questions: questionTexts,
+        responses: userResponses.filter(Boolean),
+      });
+
+      setFeedback(interviewFeedback);
+      setStep("feedback");
+    } catch (error) {
+      toast("Failed to evaluate your responses. Please try again.");
+      console.error(error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -96,7 +194,54 @@ export default function MockInterviewPage() {
     setStep("setup");
     setCurrentQuestion(0);
     setUserResponses([]);
-    setTranscript("");
+    setFeedback(null);
+    setQuestions([]);
+    setupForm.reset();
+  };
+
+  const exportToPdf = async () => {
+    if (!feedback || !user) return;
+
+    setIsExportingPdf(true);
+    try {
+      // Prepare data for PDF
+      const pdfData: MockInterviewPdfData = {
+        userInfo: {
+          name: userName || user.displayName || "Anonymous User",
+          email: user.email || "No email provided",
+          userId: user.uid,
+        },
+        interviewData: {
+          position: setupForm.getValues().position,
+          experience: setupForm.getValues().experience,
+          date: new Date(),
+          overallScore: feedback.overallScore,
+          strengths: feedback.strengths,
+          improvements: feedback.improvements,
+          responses: feedback.detailedFeedback.map((item, index) => ({
+            question: item.question,
+            response: userResponses[index] || "No response recorded",
+            feedback: item.feedback,
+          })),
+        },
+      };
+
+      // Generate PDF
+      const doc = generateMockInterviewPdf(pdfData);
+
+      // Save the PDF
+      const fileName = `mock-interview-results-${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      doc.save(fileName);
+
+      toast.success("PDF exported successfully");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to export PDF. Please try again.");
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
   return (
@@ -108,65 +253,140 @@ export default function MockInterviewPage() {
           <CardHeader>
             <CardTitle>Interview Setup</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Your Name</Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
+          <Form {...setupForm}>
+            <form onSubmit={setupForm.handleSubmit(startInterview)}>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={setupForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="space-y-2">
-              <Label htmlFor="position">Job Position</Label>
-              <Input
-                id="position"
-                placeholder="Frontend Developer"
-                value={position}
-                onChange={(e) => setPosition(e.target.value)}
-              />
-            </div>
+                <FormField
+                  control={setupForm.control}
+                  name="position"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Position</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Frontend Developer" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="space-y-2">
-              <Label htmlFor="experience">Years of Experience</Label>
-              <Select value={experience} onValueChange={setExperience}>
-                <SelectTrigger id="experience">
-                  <SelectValue placeholder="Select experience level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0-1">0-1 years</SelectItem>
-                  <SelectItem value="1-3">1-3 years</SelectItem>
-                  <SelectItem value="3-5">3-5 years</SelectItem>
-                  <SelectItem value="5-10">5-10 years</SelectItem>
-                  <SelectItem value="10+">10+ years</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={startInterview}
-              disabled={!name || !position || !experience}
-              className="w-full"
-            >
-              Start Interview
-            </Button>
-          </CardFooter>
+                <FormField
+                  control={setupForm.control}
+                  name="experience"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Years of Experience</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select experience level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="0-1">0-1 years</SelectItem>
+                          <SelectItem value="1-3">1-3 years</SelectItem>
+                          <SelectItem value="3-5">3-5 years</SelectItem>
+                          <SelectItem value="5-10">5-10 years</SelectItem>
+                          <SelectItem value="10+">10+ years</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  disabled={
+                    !setupForm.formState.isValid ||
+                    isProcessing ||
+                    setupForm.formState.isSubmitting
+                  }
+                  className="w-full"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Preparing Interview...
+                    </>
+                  ) : (
+                    "Start Interview"
+                  )}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
         </Card>
       )}
 
-      {step === "interview" && (
+      {step === "interview" && questions.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle>
               Question {currentQuestion + 1} of {questions.length}
             </CardTitle>
+            {isSupported && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={readQuestion}
+                disabled={isSpeaking}
+                title="Read question aloud"
+              >
+                <Volume2 className="h-5 w-5" />
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="bg-muted p-4 rounded-md">
-              <p className="font-medium">{questions[currentQuestion]}</p>
+            <div className="bg-muted p-4 rounded-md relative">
+              <div className="flex items-start justify-between">
+                <p className="font-medium pr-10">
+                  {questions[currentQuestion].question}
+                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="flex-shrink-0"
+                      >
+                        <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>{questions[currentQuestion].hint}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+
+            <div className="border p-4 rounded-md">
+              <div className="flex items-start justify-between mb-2">
+                <Label>Hint:</Label>
+              </div>
+              <p className="text-sm text-muted-foreground italic">
+                {questions[currentQuestion].hint}
+              </p>
             </div>
 
             <div className="border rounded-md p-4 min-h-[150px] relative">
@@ -178,7 +398,7 @@ export default function MockInterviewPage() {
                       Recording...
                     </span>
                   </div>
-                  <p>{transcript}</p>
+                  <p>{transcript || "Speak now..."}</p>
                 </>
               ) : (
                 <p className="text-muted-foreground">
@@ -201,6 +421,7 @@ export default function MockInterviewPage() {
                 className={`w-full ${
                   isRecording ? "bg-red-500 hover:bg-red-600" : ""
                 }`}
+                disabled={!hasRecognitionSupport && !isRecording}
               >
                 {isRecording ? (
                   <>
@@ -219,16 +440,29 @@ export default function MockInterviewPage() {
         </Card>
       )}
 
-      {step === "feedback" && (
+      {step === "feedback" && feedback && (
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row justify-between items-center">
             <CardTitle>Interview Feedback</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToPdf}
+              disabled={isExportingPdf || !user}
+            >
+              {isExportingPdf ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              Export to PDF
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex justify-center mb-4">
               <div className="h-32 w-32 rounded-full bg-muted flex items-center justify-center">
                 <span className="text-3xl font-bold">
-                  {mockFeedback.overallScore}/10
+                  {feedback.overallScore}/10
                 </span>
               </div>
             </div>
@@ -236,7 +470,7 @@ export default function MockInterviewPage() {
             <div>
               <h3 className="text-lg font-semibold mb-2">Strengths</h3>
               <ul className="list-disc pl-5 space-y-1">
-                {mockFeedback.strengths.map((strength, index) => (
+                {feedback.strengths.map((strength, index) => (
                   <li key={index}>{strength}</li>
                 ))}
               </ul>
@@ -247,7 +481,7 @@ export default function MockInterviewPage() {
                 Areas for Improvement
               </h3>
               <ul className="list-disc pl-5 space-y-1">
-                {mockFeedback.improvements.map((improvement, index) => (
+                {feedback.improvements.map((improvement, index) => (
                   <li key={index}>{improvement}</li>
                 ))}
               </ul>
@@ -257,9 +491,9 @@ export default function MockInterviewPage() {
               <h3 className="text-lg font-semibold mb-2">
                 Detailed Response Analysis
               </h3>
-              {questions.map((question, index) => (
+              {feedback.detailedFeedback.map((item, index) => (
                 <div key={index} className="mb-4 border rounded-md p-4">
-                  <p className="font-medium mb-2">Q: {question}</p>
+                  <p className="font-medium mb-2">Q: {item.question}</p>
                   <p className="text-sm text-muted-foreground mb-2">
                     Your Response:
                   </p>
@@ -269,13 +503,7 @@ export default function MockInterviewPage() {
                   <p className="text-sm text-muted-foreground mb-1">
                     Feedback:
                   </p>
-                  <p className="text-sm">
-                    {index === 0
-                      ? "Good introduction, but could be more concise and focused on relevant experience."
-                      : index === 1
-                      ? "Strong answer showing genuine interest in the role. Consider researching more company-specific details."
-                      : "Solid response with good examples. Try to quantify your impact more specifically."}
-                  </p>
+                  <p className="text-sm">{item.feedback}</p>
                 </div>
               ))}
             </div>
