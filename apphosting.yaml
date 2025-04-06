@@ -11,7 +11,7 @@ env:
     value: --force
 
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AiZSyDZ1tDPE3LaznwO3vcDLCyo66Fw3LVcgHE
+    value: AIzaSyDZ1tDPE3LaznwO3vcDLCyo66Fw3LVcgHE
 
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: kl2pen.firebaseapp.com
