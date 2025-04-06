@@ -1,18 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense } from "react";
 import JobList from "@/components/jobs/job-list";
 import JobFilters from "@/components/jobs/job-filters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, Search } from "lucide-react";
 
-export default function JobsPage({
-  searchParams,
-}: {
-  searchParams?: {
-    remote?: string;
-    minSalary?: string;
-    maxSalary?: string;
-  };
-}) {
+export default function JobsPage({ searchParams }: { searchParams: any }) {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with decorative pink elements */}
