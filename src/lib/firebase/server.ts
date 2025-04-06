@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import admin from "firebase-admin";
-import fireConfig from "../../../service-account.json";
+
 
 try {
   admin.initializeApp({
-    credential: admin.credential.cert(fireConfig as admin.ServiceAccount),
+    credential: admin.credential.cert({
+      projectId: process.env.NEXT_PRIVATE_SA_PROJECT_ID,
+      clientEmail: process.env.NEXT_PRIVATE_CLIENT_EMAIL,
+      privateKey: process.env.NEXT_PRIVATE_SA_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    })
   });
 } catch (error: any) {
   /*
