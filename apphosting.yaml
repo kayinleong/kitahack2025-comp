@@ -30,3 +30,15 @@ env:
       
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
     value: G-DFGK6KQW62
+
+  - variable: GEMINI_API_KEY
+    secret: projects/495671879802/secrets/GEMINI_API_KEY
+
+  - variable: NEXT_PRIVATE_SA_PROJECT_ID
+    secret: projects/495671879802/secrets/NEXT_PRIVATE_SA_PROJECT_ID
+
+  - variable: NEXT_PRIVATE_SA_PRIVATE_KEY
+    secret: projects/495671879802/secrets/NEXT_PRIVATE_SA_PRIVATE_KEY
+
+  - variable: NEXT_PRIVATE_CLIENT_EMAIL
+    secret: projects/495671879802/secrets/NEXT_PRIVATE_CLIENT_EMAIL
