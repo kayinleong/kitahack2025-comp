@@ -1,14 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getJobById } from "@/lib/actions/job.action";
 import { notFound } from "next/navigation";
 import JobApplicationsContainer from "@/components/jobs/job-applications-container";
 
-export default async function JobApplicationsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function JobApplicationsPage({ params }: { params: any }) {
   // Fetch job data
   const { job, error: jobError } = await getJobById((await params).id);
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,11 +17,7 @@ import { getJobById } from "@/lib/actions/job.action";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 
-export default async function JobDetailsPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function JobDetailsPage({ params }: { params: any }) {
   // Fetch job data from the server using the job ID
   const { job, error } = await getJobById((await params).id);
 

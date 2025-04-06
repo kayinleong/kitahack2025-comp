@@ -1,24 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Suspense } from "react";
 import JobList from "@/components/jobs/job-list";
 import JobFilters from "@/components/jobs/job-filters";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function JobsPage({
-  searchParams,
-}: {
-  searchParams?: {
-    remote?: string;
-    minSalary?: string;
-    maxSalary?: string;
-  };
-}) {
+export default function JobsPage({ searchParams }: { searchParams: any }) {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Find Your Next Opportunity</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
-          <JobFilters />
+          <Suspense fallback={<Skeleton className="h-10 w-32" />}>
+            <JobFilters />
+          </Suspense>
         </div>
 
         <div className="lg:col-span-3">

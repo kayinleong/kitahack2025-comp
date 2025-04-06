@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -14,11 +15,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   };
 };
 
-export default async function CompanyEditJobPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function CompanyEditJobPage({ params }: { params: any }) {
   // Get the current user
   const sessionResponse = await validateSession();
   const userId = sessionResponse.user?.uid;
