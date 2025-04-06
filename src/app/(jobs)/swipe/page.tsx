@@ -18,6 +18,7 @@ import {
   ThumbsDown,
   Briefcase,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import {
   motion,
@@ -195,11 +196,28 @@ export default function JobSwipePage() {
   // Loading state
   if (authLoading || isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Job Swipe</h1>
+      <div className="container mx-auto px-4 py-12">
+        {/* Pink themed header */}
+        <div className="relative mb-10 text-center md:text-left">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-pink-100 rounded-full opacity-60 -z-10"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-200 rounded-full opacity-40 -z-10"></div>
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
+            JOB FINDER
+            <Sparkles className="h-4 w-4 ml-2 text-pink-500" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 mb-4">
+            Job <span className="text-pink-600">Swipe</span>
+          </h1>
+          <p className="text-slate-600 max-w-2xl">
+            Find your perfect job match with our intuitive swipe interface.
+          </p>
+        </div>
+
         <div className="flex flex-col items-center justify-center h-[500px]">
-          <Loader2 className="h-8 w-8 animate-spin mb-4" />
-          <p>Loading jobs...</p>
+          <div className="bg-pink-50 rounded-full p-4">
+            <Loader2 className="h-8 w-8 animate-spin text-pink-600" />
+          </div>
+          <p className="mt-4 text-slate-600">Loading jobs for you...</p>
         </div>
       </div>
     );
@@ -208,14 +226,38 @@ export default function JobSwipePage() {
   // Empty state when no jobs are available
   if (displayJobs.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center">Job Swipe</h1>
-        <div className="flex flex-col items-center justify-center h-[500px] text-center">
-          <h2 className="text-2xl font-bold mb-4">No more jobs to show!</h2>
-          <p className="text-muted-foreground mb-6">
-            You&apos;ve reviewed all available jobs.
+      <div className="container mx-auto px-4 py-12">
+        {/* Pink themed header */}
+        <div className="relative mb-10 text-center md:text-left">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-pink-100 rounded-full opacity-60 -z-10"></div>
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-200 rounded-full opacity-40 -z-10"></div>
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
+            JOB FINDER
+            <Sparkles className="h-4 w-4 ml-2 text-pink-500" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 mb-4">
+            Job <span className="text-pink-600">Swipe</span>
+          </h1>
+          <p className="text-slate-600 max-w-2xl">
+            Find your perfect job match with our intuitive swipe interface.
           </p>
-          <Button onClick={handleRefresh}>Refresh Jobs</Button>
+        </div>
+
+        <div className="flex flex-col items-center justify-center h-[500px] text-center">
+          <div className="bg-white p-8 rounded-2xl shadow-md border border-pink-100 max-w-md">
+            <h2 className="text-2xl font-bold mb-4 text-slate-800">
+              No more jobs to show!
+            </h2>
+            <p className="text-slate-600 mb-6">
+              You&apos;ve reviewed all available jobs.
+            </p>
+            <Button
+              onClick={handleRefresh}
+              className="bg-pink-600 hover:bg-pink-700 text-white"
+            >
+              Refresh Jobs
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -225,8 +267,22 @@ export default function JobSwipePage() {
   const isFinished = currentIndex >= displayJobs.length;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">Job Swipe</h1>
+    <div className="container mx-auto px-4 py-12">
+      {/* Pink themed header */}
+      <div className="relative mb-10 text-center md:text-left">
+        <div className="absolute top-0 right-0 w-20 h-20 bg-pink-100 rounded-full opacity-60 -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-200 rounded-full opacity-40 -z-10"></div>
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
+          JOB FINDER
+          <Sparkles className="h-4 w-4 ml-2 text-pink-500" />
+        </div>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 mb-4">
+          Job <span className="text-pink-600">Swipe</span>
+        </h1>
+        <p className="text-slate-600 max-w-2xl">
+          Swipe right for jobs you like, left for those you don&apos;t
+        </p>
+      </div>
 
       <div className="flex flex-col items-center justify-center">
         <div
