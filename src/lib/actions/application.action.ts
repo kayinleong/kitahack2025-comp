@@ -216,7 +216,6 @@ export async function listApplications(
     try {
         const db = getDb();
         const applicationsCollection = 'Applications';
-        console.log("Listing applications with params:", filterParams);
         const { jobId, userId, status, limit = 20 } = filterParams;
         // Create base query
         let query = db.collection(applicationsCollection)
