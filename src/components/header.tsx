@@ -4,9 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Briefcase, User, LogOut } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Menu, Briefcase, User, LogOut, ChevronDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   DropdownMenu,
@@ -42,7 +40,7 @@ const companyNavigation = [
 ];
 
 export default function Header() {
-  const [open, setOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -118,41 +116,55 @@ export default function Header() {
     return profile?.name || "User";
   };
 
-  const NavItems = () => (
-    <>
-      {navigation.map((item) => (
-        <Link
-          key={item.name}
-          href={item.href}
-          className={cn(
-            "text-sm font-medium transition-colors hover:text-primary",
-            pathname === item.href ? "text-primary" : "text-muted-foreground"
-          )}
-          onClick={() => setOpen(false)}
-        >
-          {item.name}
-        </Link>
-      ))}
-    </>
-  );
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="mx-auto px-2 container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center space-x-2">
-            <Briefcase className="h-6 w-6" />
-            <span className="font-bold text-xl">KL2PEN</span>
+    <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center">
+          <Link
+            href="/"
+            className="text-3xl font-extrabold tracking-tighter text-red-600"
+          >
+            KL2<span className="text-pink-500">PEN</span>
           </Link>
 
-          {!isMobile && (
-            <div className="hidden md:flex md:gap-6">
-              <NavItems />
-            </div>
-          )}
+          <nav className="hidden md:flex ml-10 space-x-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`text-gray-600 hover:text-gray-900 font-medium ${
+                  pathname === item.href ? "text-gray-900" : ""
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+
+            {profile?.role === "COMPANY" && (
+              <div className="relative group">
+                <button className="flex items-center text-gray-600 hover:text-gray-900 font-medium">
+                  Company <ChevronDown className="ml-1 h-4 w-4" />
+                </button>
+                <div className="absolute hidden group-hover:block bg-white shadow-lg rounded-md p-4 w-48 z-10">
+                  <Link
+                    href="/company/jobs"
+                    className="block py-2 hover:text-primary"
+                  >
+                    My Jobs
+                  </Link>
+                  <Link
+                    href="/company/jobs/new"
+                    className="block py-2 hover:text-primary"
+                  >
+                    Post Job
+                  </Link>
+                </div>
+              </div>
+            )}
+          </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center space-x-4">
           {!isLoading && (
             <>
               {user ? (
@@ -212,115 +224,115 @@ export default function Header() {
               ) : (
                 <>
                   <Button
-                    asChild
                     variant="ghost"
-                    size="sm"
-                    className="hidden md:flex"
+                    asChild
+                    className="hidden md:inline-flex"
                   >
                     <Link href="/login">Log in</Link>
                   </Button>
-                  <Button asChild size="sm" className="hidden md:flex">
-                    <Link href="/signup">Sign up</Link>
+                  <Button
+                    asChild
+                    className="bg-pink-600 hover:bg-pink-700 hidden md:inline-flex"
+                  >
+                    <Link href="/signup">Sign Up</Link>
                   </Button>
                 </>
               )}
             </>
           )}
 
-          {isMobile && (
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Toggle menu</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg">
+          <div className="px-4 py-6 space-y-4">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`block text-gray-600 hover:text-gray-900 font-medium py-2 ${
+                  pathname === item.href ? "text-gray-900" : ""
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+
+            {!isLoading && !user && (
+              <div className="pt-4 border-t border-gray-200 mt-4 space-y-3">
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/login">Log in</Link>
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col gap-6 mt-8">
-                  <NavItems />
-                  <div className="flex flex-col gap-2 mt-4">
-                    {!isLoading && (
-                      <>
-                        {user ? (
-                          <>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage
-                                  src={user.photoURL || ""}
-                                  alt={getDisplayName()}
-                                />
-                                <AvatarFallback>
-                                  {getUserInitials()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="text-sm font-medium">
-                                  {getDisplayName()}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {user.email}
-                                </p>
-                                {profile?.role === "COMPANY" && (
-                                  <p className="text-xs text-blue-500 font-medium">
-                                    Company Account
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <Button asChild variant="outline" size="sm">
-                              <Link
-                                href="/profile"
-                                onClick={() => setOpen(false)}
-                              >
-                                <User className="h-4 w-4 mr-2" />
-                                Profile
-                              </Link>
-                            </Button>
-                            {profile?.role !== "COMPANY" && (
-                              <Button asChild variant="outline" size="sm">
-                                <Link
-                                  href="/applications"
-                                  onClick={() => setOpen(false)}
-                                >
-                                  <Briefcase className="h-4 w-4 mr-2" />
-                                  My Applications
-                                </Link>
-                              </Button>
-                            )}
-                            <Button size="sm" onClick={handleLogout}>
-                              <LogOut className="h-4 w-4 mr-2" />
-                              Log out
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button asChild variant="outline" size="sm">
-                              <Link
-                                href="/login"
-                                onClick={() => setOpen(false)}
-                              >
-                                Log in
-                              </Link>
-                            </Button>
-                            <Button asChild size="sm">
-                              <Link
-                                href="/signup"
-                                onClick={() => setOpen(false)}
-                              >
-                                Sign up
-                              </Link>
-                            </Button>
-                          </>
-                        )}
-                      </>
-                    )}
+                <Button
+                  asChild
+                  className="w-full bg-pink-600 hover:bg-pink-700"
+                >
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </div>
+            )}
+
+            {!isLoading && user && (
+              <div className="pt-4 border-t border-gray-200 mt-4 space-y-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage
+                      src={user.photoURL || ""}
+                      alt={getDisplayName()}
+                    />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{getDisplayName()}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          )}
+
+                <Button asChild variant="outline" className="w-full">
+                  <Link
+                    href="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </Button>
+
+                {profile?.role !== "COMPANY" && (
+                  <Button asChild variant="outline" className="w-full">
+                    <Link
+                      href="/applications"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      My Applications
+                    </Link>
+                  </Button>
+                )}
+
+                <Button
+                  className="w-full bg-pink-600 hover:bg-pink-700"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log out
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-      </nav>
+      )}
     </header>
   );
 }
