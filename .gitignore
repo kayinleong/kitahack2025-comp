@@ -42,5 +42,5 @@ next-env.d.ts
 
 # Firebase
 .firebase/
-apphosting.yaml
+firebase-debug.log
 service-account.json
