@@ -17,7 +17,7 @@ export default async function JobList({
 }) {
   // Handle either filtering or listing all jobs
   const { jobs, error } =
-    searchParams && Object.keys(searchParams).length > 0
+    searchParams && Object.keys(await searchParams).length > 0
       ? await filterJobs({
           isRemote: searchParams.remote === "true",
           minSalary: searchParams.minSalary
