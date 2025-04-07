@@ -36,7 +36,9 @@ export default function JobsPage({ searchParams }: { searchParams: any }) {
               <Search className="h-4 w-4 text-pink-500" />
               <h2 className="font-semibold text-slate-800">Filter Jobs</h2>
             </div>
-            <JobFilters />
+            <Suspense fallback={<JobListSkeleton />}>
+              <JobFilters />
+            </Suspense>
           </div>
         </div>
 
