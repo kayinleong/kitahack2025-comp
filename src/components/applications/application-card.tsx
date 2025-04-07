@@ -127,7 +127,7 @@ export default function ApplicationCard({
 
       {/* Application Details Dialog */}
       <Dialog open={openDetailsDialog} onOpenChange={setOpenDetailsDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
             <DialogDescription>
@@ -137,7 +137,7 @@ export default function ApplicationCard({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold">Position</h4>
                 <p className="text-sm font-medium">
@@ -192,7 +192,7 @@ export default function ApplicationCard({
             {job && (
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold">Job Location</h4>
-                <div className="text-sm flex items-center">
+                <div className="text-sm flex flex-wrap items-center gap-1">
                   <p className="text-sm">
                     {job.company_location}
                     {job.is_remote && " (Remote available)"}
@@ -247,19 +247,24 @@ export default function ApplicationCard({
             )}
           </div>
 
-          <DialogFooter className="flex justify-between">
-            <Button variant="outline" asChild>
+          <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
+            <Button variant="outline" className="w-full sm:w-auto" asChild>
               <Link href={`/jobs/${application.job_id}`}>View Job Posting</Link>
             </Button>
 
-            <div className="space-x-2">
-              <Button variant="outline" asChild>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" className="w-full sm:w-auto" asChild>
                 <Link href={application.resume_path} target="_blank">
                   <FileText className="h-4 w-4 mr-2" />
                   View Resume
                 </Link>
               </Button>
-              <Button onClick={() => setOpenDetailsDialog(false)}>Close</Button>
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => setOpenDetailsDialog(false)}
+              >
+                Close
+              </Button>
             </div>
           </DialogFooter>
         </DialogContent>
