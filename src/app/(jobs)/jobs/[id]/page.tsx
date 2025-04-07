@@ -129,7 +129,7 @@ export default async function JobDetailsPage({ params }: { params: any }) {
                 ))}
               </div>
 
-              <Tabs defaultValue="description">
+              <Tabs defaultValue="description" className="overflow-x-auto">
                 <TabsList className="mb-4">
                   <TabsTrigger value="description">Description</TabsTrigger>
                   <TabsTrigger value="requirements">Requirements</TabsTrigger>

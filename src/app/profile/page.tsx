@@ -18,7 +18,7 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto container max-w-4xl py-10">
+    <div className="mx-auto container max-w-4xl py-10 p-4">
       <div className="flex flex-col space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profile</h1>

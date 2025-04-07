@@ -69,6 +69,7 @@ export default function MockInterviewPage() {
   const { user } = useAuth();
   const [userName, setUserName] = useState<string>("");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [currentTranscript, setCurrentTranscript] = useState<string>("");
 
   // Speech synthesis
   const { isSupported, isSpeaking, speak, cancel } = useSpeech();
@@ -80,7 +81,17 @@ export default function MockInterviewPage() {
     startListening,
     stopListening,
     hasRecognitionSupport,
+    resetTranscript,
   } = useSpeechToText();
+
+  // Update currentTranscript when transcript changes
+  useEffect(() => {
+    if (isListening && transcript) {
+      setCurrentTranscript((prevTranscript) =>
+        prevTranscript ? `${prevTranscript} ${transcript}` : transcript
+      );
+    }
+  }, [transcript, isListening]);
 
   // Setup form
   const setupForm = useForm<InterviewSetup>({
@@ -147,12 +158,18 @@ export default function MockInterviewPage() {
       stopListening();
       setIsRecording(false);
 
-      // Save transcript to responses
-      setUserResponses([...userResponses, transcript]);
+      // Save concatenated transcript to responses
+      if (currentTranscript) {
+        const responsesCopy = [...userResponses];
+        responsesCopy[currentQuestion] = currentTranscript;
+        setUserResponses(responsesCopy);
+      }
 
       // Move to next question or finish
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
+        setCurrentTranscript(""); // Reset current transcript for next question
+        resetTranscript(); // Reset the speech recognition transcript
       } else {
         finishInterview();
       }
@@ -160,6 +177,11 @@ export default function MockInterviewPage() {
       // Stop any ongoing speech
       if (isSpeaking) {
         cancel();
+      }
+
+      // Set current transcript if there's an existing response for this question
+      if (!currentTranscript && userResponses[currentQuestion]) {
+        setCurrentTranscript(userResponses[currentQuestion]);
       }
 
       // Start recording
@@ -196,6 +218,7 @@ export default function MockInterviewPage() {
     setUserResponses([]);
     setFeedback(null);
     setQuestions([]);
+    setCurrentTranscript("");
     setupForm.reset();
   };
 
@@ -398,12 +421,12 @@ export default function MockInterviewPage() {
                       Recording...
                     </span>
                   </div>
-                  <p>{transcript || "Speak now..."}</p>
+                  <p>{currentTranscript || "Speak now..."}</p>
                 </>
               ) : (
                 <p className="text-muted-foreground">
-                  {transcript
-                    ? transcript
+                  {currentTranscript
+                    ? currentTranscript
                     : "Press the microphone button to start recording your answer..."}
                 </p>
               )}

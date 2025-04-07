@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserApplicationsContainer from "@/components/applications/user-applications-container";
-import { Briefcase, ClipboardList, Sparkles } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 
 export default function ApplicationsPage() {
   return (
