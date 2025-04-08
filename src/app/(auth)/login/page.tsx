@@ -1,7 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Briefcase } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import LoginForm from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
@@ -11,52 +9,45 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="p-4 pt-10 lg:pt-0 container relative flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 bg-primary" />
-        <div className="relative z-20 flex items-center text-lg font-medium">
-          <Briefcase className="h-6 w-6 mr-2" />
-          <span>KL2PEN</span>
-        </div>
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg">
-              &quot;KL2PEN has transformed how I find job opportunities and
-              prepare for interviews. The AI tools are incredibly helpful!&quot;
-            </p>
-            <footer className="text-sm">Sofia Davis</footer>
-          </blockquote>
-        </div>
-      </div>
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Welcome back
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your credentials to sign in to your account
-            </p>
-          </div>
+    <div className="min-h-screen bg-pink-50 flex flex-col items-center justify-center p-4">
+      {/* Header with logo */}
 
-          <LoginForm />
+      {/* Main login card */}
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 border border-pink-100">
+        <h1 className="text-2xl font-semibold mb-6 text-pink-800">Sign in</h1>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-          </div>
+        <LoginForm />
 
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+        <div className="mt-4 text-center">
+          <p className="text-sm">
+            New to KL2PEN?{" "}
             <Link
               href="/signup"
-              className="underline underline-offset-4 hover:text-primary"
+              className="text-pink-600 font-medium hover:underline"
             >
-              Sign up
+              Join now
             </Link>
           </p>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="w-full max-w-md mt-8 text-center text-sm text-gray-500">
+        <p>
+          By signing in, you agree to KL2PEN&apos;s{" "}
+          <Link href="/terms" className="text-pink-600 hover:underline">
+            User Agreement
+          </Link>
+          ,{" "}
+          <Link href="/privacy" className="text-pink-600 hover:underline">
+            Privacy Policy
+          </Link>
+          , and{" "}
+          <Link href="/cookies" className="text-pink-600 hover:underline">
+            Cookie Policy
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );

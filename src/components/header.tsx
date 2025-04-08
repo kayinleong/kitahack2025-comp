@@ -25,7 +25,7 @@ import { Profile } from "@/lib/domains/profile.domain";
 // Define navigation items based on user role
 const publicNavigation = [
   { name: "Home", href: "/" },
-  { name: "Jobs", href: "/jobs" },
+  { name: "Explore Jobs", href: "/jobs" },
   { name: "Job Swipe", href: "/swipe" },
   { name: "AI Toolkit", href: "/ai-toolkit" },
 ];
