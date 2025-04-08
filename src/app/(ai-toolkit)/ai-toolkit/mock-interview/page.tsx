@@ -26,6 +26,8 @@ import {
   Volume2,
   HelpCircle,
   Download,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import {
   generateInterviewQuestions,
@@ -50,7 +52,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { useImprovedSpeechToText } from "@/hooks/useSpeechRecognition";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { getProfileById } from "@/lib/actions/profile.action";
 import {
@@ -69,7 +71,6 @@ export default function MockInterviewPage() {
   const { user } = useAuth();
   const [userName, setUserName] = useState<string>("");
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const [currentTranscript, setCurrentTranscript] = useState<string>("");
 
   // Speech synthesis
   const { isSupported, isSpeaking, speak, cancel } = useSpeech();
@@ -81,17 +82,7 @@ export default function MockInterviewPage() {
     startListening,
     stopListening,
     hasRecognitionSupport,
-    resetTranscript,
-  } = useSpeechToText();
-
-  // Update currentTranscript when transcript changes
-  useEffect(() => {
-    if (isListening && transcript) {
-      setCurrentTranscript((prevTranscript) =>
-        prevTranscript ? `${prevTranscript} ${transcript}` : transcript
-      );
-    }
-  }, [transcript, isListening]);
+  } = useImprovedSpeechToText();
 
   // Setup form
   const setupForm = useForm<InterviewSetup>({
@@ -153,23 +144,20 @@ export default function MockInterviewPage() {
   };
 
   const toggleRecording = () => {
+    console.log("Toggle recording:", isRecording, isListening);
     if (isListening) {
       // Stop recording
       stopListening();
       setIsRecording(false);
 
-      // Save concatenated transcript to responses
-      if (currentTranscript) {
-        const responsesCopy = [...userResponses];
-        responsesCopy[currentQuestion] = currentTranscript;
-        setUserResponses(responsesCopy);
-      }
+      // Save transcript to responses
+      console.log("user response:", ...userResponses);
+      console.log("Transcript:", transcript);
+      setUserResponses([...userResponses, transcript]);
 
       // Move to next question or finish
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
-        setCurrentTranscript(""); // Reset current transcript for next question
-        resetTranscript(); // Reset the speech recognition transcript
       } else {
         finishInterview();
       }
@@ -177,11 +165,6 @@ export default function MockInterviewPage() {
       // Stop any ongoing speech
       if (isSpeaking) {
         cancel();
-      }
-
-      // Set current transcript if there's an existing response for this question
-      if (!currentTranscript && userResponses[currentQuestion]) {
-        setCurrentTranscript(userResponses[currentQuestion]);
       }
 
       // Start recording
@@ -218,7 +201,6 @@ export default function MockInterviewPage() {
     setUserResponses([]);
     setFeedback(null);
     setQuestions([]);
-    setCurrentTranscript("");
     setupForm.reset();
   };
 
@@ -269,24 +251,48 @@ export default function MockInterviewPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-8">AI Mock Interview</h1>
+      {/* Header with decorative elements */}
+      <div className="relative mb-12 text-center md:text-left">
+        <div className="absolute top-0 right-0 w-20 h-20 bg-pink-100 rounded-full opacity-60 -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-16 h-16 bg-pink-200 rounded-full opacity-40 -z-10"></div>
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-4">
+          AI INTERVIEW
+          <Mic className="h-4 w-4 ml-2 text-pink-500" />
+        </div>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 mb-4">
+          AI <span className="text-pink-600">Mock Interview</span>
+        </h1>
+        <p className="text-slate-600 max-w-2xl mx-auto md:mx-0">
+          Practice your interview skills with our AI interviewer and receive
+          personalized feedback
+        </p>
+      </div>
 
       {step === "setup" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Interview Setup</CardTitle>
+        <Card className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 relative">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-full -mr-8 -mt-8 z-0"></div>
+          <CardHeader className="relative z-10">
+            <CardTitle className="text-xl font-bold text-slate-800">
+              Interview Setup
+            </CardTitle>
           </CardHeader>
           <Form {...setupForm}>
             <form onSubmit={setupForm.handleSubmit(startInterview)}>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 relative z-10">
                 <FormField
                   control={setupForm.control}
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your Name</FormLabel>
+                      <FormLabel className="text-slate-700">
+                        Your Name
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input
+                          placeholder="John Doe"
+                          {...field}
+                          className="rounded-lg"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -298,9 +304,15 @@ export default function MockInterviewPage() {
                   name="position"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Job Position</FormLabel>
+                      <FormLabel className="text-slate-700">
+                        Job Position
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Frontend Developer" {...field} />
+                        <Input
+                          placeholder="Frontend Developer"
+                          {...field}
+                          className="rounded-lg"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -312,13 +324,15 @@ export default function MockInterviewPage() {
                   name="experience"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Years of Experience</FormLabel>
+                      <FormLabel className="text-slate-700">
+                        Years of Experience
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="rounded-lg">
                             <SelectValue placeholder="Select experience level" />
                           </SelectTrigger>
                         </FormControl>
@@ -334,8 +348,17 @@ export default function MockInterviewPage() {
                     </FormItem>
                   )}
                 />
+
+                <div className="bg-pink-50 rounded-xl p-6 mt-6">
+                  <p className="text-slate-700">
+                    Our AI interviewer will ask you relevant questions based on
+                    your desired job position and experience level. Speak your
+                    answers and get real-time feedback to improve your interview
+                    skills.
+                  </p>
+                </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="relative z-10">
                 <Button
                   type="submit"
                   disabled={
@@ -343,7 +366,7 @@ export default function MockInterviewPage() {
                     isProcessing ||
                     setupForm.formState.isSubmitting
                   }
-                  className="w-full"
+                  className="w-full bg-pink-600 hover:bg-pink-700 rounded-xl py-6"
                 >
                   {isProcessing ? (
                     <>
@@ -351,7 +374,9 @@ export default function MockInterviewPage() {
                       Preparing Interview...
                     </>
                   ) : (
-                    "Start Interview"
+                    <>
+                      Start Interview <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
                   )}
                 </Button>
               </CardFooter>
@@ -361,9 +386,10 @@ export default function MockInterviewPage() {
       )}
 
       {step === "interview" && questions.length > 0 && (
-        <Card>
-          <CardHeader className="flex flex-row justify-between items-center">
-            <CardTitle>
+        <Card className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 relative">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-full -mr-8 -mt-8 z-0"></div>
+          <CardHeader className="flex flex-row justify-between items-center relative z-10">
+            <CardTitle className="text-xl font-bold text-slate-800">
               Question {currentQuestion + 1} of {questions.length}
             </CardTitle>
             {isSupported && (
@@ -373,15 +399,16 @@ export default function MockInterviewPage() {
                 onClick={readQuestion}
                 disabled={isSpeaking}
                 title="Read question aloud"
+                className="text-pink-600 hover:text-pink-700 hover:bg-pink-50"
               >
                 <Volume2 className="h-5 w-5" />
               </Button>
             )}
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-muted p-4 rounded-md relative">
+          <CardContent className="space-y-6 relative z-10">
+            <div className="bg-pink-50 p-6 rounded-xl relative">
               <div className="flex items-start justify-between">
-                <p className="font-medium pr-10">
+                <p className="font-medium pr-10 text-slate-800">
                   {questions[currentQuestion].question}
                 </p>
                 <TooltipProvider>
@@ -390,9 +417,9 @@ export default function MockInterviewPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="flex-shrink-0"
+                        className="flex-shrink-0 text-pink-600 hover:bg-pink-100"
                       >
-                        <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                        <HelpCircle className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
@@ -403,50 +430,52 @@ export default function MockInterviewPage() {
               </div>
             </div>
 
-            <div className="border p-4 rounded-md">
+            <div className="bg-gray-50 p-6 rounded-xl">
               <div className="flex items-start justify-between mb-2">
-                <Label>Hint:</Label>
+                <Label className="text-slate-700 font-semibold">Hint:</Label>
               </div>
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-sm text-slate-600 italic">
                 {questions[currentQuestion].hint}
               </p>
             </div>
 
-            <div className="border rounded-md p-4 min-h-[150px] relative">
+            <div className="border rounded-xl p-6 min-h-[150px] relative">
               {isRecording ? (
                 <>
                   <div className="absolute top-2 right-2 flex items-center">
                     <div className="h-3 w-3 bg-red-500 rounded-full mr-2 animate-pulse"></div>
-                    <span className="text-sm text-muted-foreground">
-                      Recording...
-                    </span>
+                    <span className="text-sm text-slate-500">Recording...</span>
                   </div>
-                  <p>{currentTranscript || "Speak now..."}</p>
+                  <p className="text-slate-800">
+                    {transcript || "Speak now..."}
+                  </p>
                 </>
               ) : (
-                <p className="text-muted-foreground">
-                  {currentTranscript
-                    ? currentTranscript
+                <p className="text-slate-500">
+                  {transcript
+                    ? transcript
                     : "Press the microphone button to start recording your answer..."}
                 </p>
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
+          <CardFooter className="relative z-10">
             {isProcessing ? (
-              <Button disabled className="w-full">
+              <Button disabled className="w-full bg-gray-300 rounded-xl py-6">
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Analyzing Responses...
               </Button>
             ) : (
               <Button
                 onClick={toggleRecording}
-                className={`w-full ${
-                  isRecording ? "bg-red-500 hover:bg-red-600" : ""
+                className={`w-full rounded-xl py-6 ${
+                  isRecording
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-pink-600 hover:bg-pink-700"
                 }`}
                 disabled={!hasRecognitionSupport && !isRecording}
               >
-                {isRecording ? (
+                {isListening ? (
                   <>
                     <MicOff className="h-4 w-4 mr-2" />
                     Stop Recording
@@ -464,14 +493,24 @@ export default function MockInterviewPage() {
       )}
 
       {step === "feedback" && feedback && (
-        <Card>
-          <CardHeader className="flex flex-row justify-between items-center">
-            <CardTitle>Interview Feedback</CardTitle>
+        <Card className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 relative">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-full -mr-8 -mt-8 z-0"></div>
+          <CardHeader className="flex flex-row justify-between items-center relative z-10">
+            <div className="flex flex-col">
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-medium mb-2 self-start">
+                RESULTS
+                <Sparkles className="h-4 w-4 ml-2 text-pink-500" />
+              </div>
+              <CardTitle className="text-xl font-bold text-slate-800">
+                Interview Feedback
+              </CardTitle>
+            </div>
             <Button
               variant="outline"
               size="sm"
               onClick={exportToPdf}
               disabled={isExportingPdf || !user}
+              className="border-pink-200 text-pink-600 hover:bg-pink-50"
             >
               {isExportingPdf ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -481,59 +520,75 @@ export default function MockInterviewPage() {
               Export to PDF
             </Button>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 relative z-10">
             <div className="flex justify-center mb-4">
-              <div className="h-32 w-32 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-3xl font-bold">
+              <div className="h-32 w-32 rounded-full bg-pink-100 flex items-center justify-center">
+                <span className="text-3xl font-bold text-pink-600">
                   {feedback.overallScore}/10
                 </span>
               </div>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Strengths</h3>
+            <div className="bg-pink-50 rounded-xl p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-slate-800">
+                Strengths
+              </h3>
               <ul className="list-disc pl-5 space-y-1">
                 {feedback.strengths.map((strength, index) => (
-                  <li key={index}>{strength}</li>
+                  <li key={index} className="text-slate-700">
+                    {strength}
+                  </li>
                 ))}
               </ul>
             </div>
 
-            <div>
-              <h3 className="text-lg font-semibold mb-2">
+            <div className="bg-gray-50 rounded-xl p-6 mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-slate-800">
                 Areas for Improvement
               </h3>
               <ul className="list-disc pl-5 space-y-1">
                 {feedback.improvements.map((improvement, index) => (
-                  <li key={index}>{improvement}</li>
+                  <li key={index} className="text-slate-700">
+                    {improvement}
+                  </li>
                 ))}
               </ul>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-2">
+              <h3 className="text-lg font-semibold mb-4 text-slate-800">
                 Detailed Response Analysis
               </h3>
               {feedback.detailedFeedback.map((item, index) => (
-                <div key={index} className="mb-4 border rounded-md p-4">
-                  <p className="font-medium mb-2">Q: {item.question}</p>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Your Response:
+                <div
+                  key={index}
+                  className="mb-4 border border-gray-100 rounded-xl p-6 shadow-sm"
+                >
+                  <p className="font-medium mb-3 text-slate-800">
+                    Q: {item.question}
                   </p>
-                  <p className="text-sm mb-2">
-                    {userResponses[index] || "No response recorded"}
-                  </p>
-                  <p className="text-sm text-muted-foreground mb-1">
+                  <div className="bg-gray-50 p-4 rounded-lg mb-3">
+                    <p className="text-sm text-pink-600 font-medium mb-1">
+                      Your Response:
+                    </p>
+                    <p className="text-sm text-slate-700">
+                      {userResponses[index] || "No response recorded"}
+                    </p>
+                  </div>
+                  <p className="text-sm text-pink-600 font-medium mb-1">
                     Feedback:
                   </p>
-                  <p className="text-sm">{item.feedback}</p>
+                  <p className="text-sm text-slate-700">{item.feedback}</p>
                 </div>
               ))}
             </div>
           </CardContent>
-          <CardFooter>
-            <Button onClick={restartInterview} className="w-full">
-              Start New Interview
+          <CardFooter className="relative z-10">
+            <Button
+              onClick={restartInterview}
+              className="w-full bg-pink-600 hover:bg-pink-700 rounded-xl py-6"
+            >
+              Start New Interview <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardFooter>
         </Card>

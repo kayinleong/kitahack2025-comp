@@ -85,25 +85,41 @@ export function useSpeechToText(options: UseSpeechToTextOptions = {}) {
                     setIsListening(false);
                 };
 
-                recognition.onresult = (event) => {
-                    let finalTranscript = '';
+                // Add a ref to store the latest interim result to avoid duplication
+                let interimResult = '';
 
-                    // Get the complete transcript from all results
+                recognition.onresult = (event) => {
+                    let currentTranscript = '';
+                    let hasInterim = false;
+
+                    // Get the current transcript from all results
                     for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const transcript = event.results[i][0].transcript;
+                        const transcriptPart = event.results[i][0].transcript;
                         // Fix: Access isFinal property on the correct level of the object
                         if (event.results[i] && 'isFinal' in event.results[i] && event.results[i].isFinal) {
-                            finalTranscript += transcript;
+                            // For final results, add to currentTranscript
+                            currentTranscript += transcriptPart;
+                            // Reset the interim result when we get a final result
+                            interimResult = '';
                         } else {
-                            // For interim results
-                            setTranscript(transcript);
-                            return; // Exit early for interim updates
+                            // For interim results, set the interim tracker
+                            interimResult = transcriptPart;
+                            hasInterim = true;
                         }
                     }
 
-                    // Set the final transcript if we have one
-                    if (finalTranscript) {
-                        setTranscript(finalTranscript);
+                    // If we have interim results, display them temporarily
+                    if (hasInterim) {
+                        setTranscript(prev => {
+                            // We're using the interim result without appending multiple times
+                            return prev + interimResult;
+                        });
+                        return; // Exit early for interim updates
+                    }
+
+                    // Only append final transcript if we have one
+                    if (currentTranscript) {
+                        setTranscript(prev => prev + currentTranscript);
                     }
                 };
 
