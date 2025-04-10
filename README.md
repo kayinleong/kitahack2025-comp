@@ -1,5 +1,24 @@
 # KL2PEN Job Seeking Website
 
+## Overview of Technologies Used
+
+| Category             | Technology / Tool             | Purpose                                                                 |
+|----------------------|-------------------------------|-------------------------------------------------------------------------|
+| **Frontend**         | React + Next.js               | Framework for building dynamic, fast, SEO-optimized user interfaces    |
+|                      | Tailwind CSS                  | Utility-first CSS framework for responsive design                      |
+|                      | shadcn/ui                     | Accessible UI component library based on Radix UI                      |
+|                      | Next.js Server Actions        | Secure API layer for validating requests before reaching backend       |
+| **Backend & Hosting**| Firebase Authentication       | User authentication and authorization                                  |
+|                      | Firebase Firestore            | NoSQL database for storing user data and job listings                  |
+|                      | Firebase Cloud Storage        | Storage for uploaded files like resumes                                |
+|                      | Firebase App Hosting          | Hosting platform with built-in CI/CD via GitHub                        |
+| **AI Integration**   | Gemini API via Firebase GenKit| AI-powered Career Swipe, Resume Analyzer, and AI Mock Interview  |
+|                      | LangChain PDF Loader          | Extracts text from PDF resumes to feed into Gemini                     |
+| **DevOps**           | GitHub + Firebase AppHosting  | Version control and continuous deployment automation                   |
+| **Security**         | GCP Secret Manager            | Safely stores sensitive API tokens                                     |
+| **Cloud**            | Cloud Run & Cloud Run Revision| Builds and deploys cloud-based services                                |
+
+
 ### Implementation
 KL2PEN is built using a modern and scalable tech stack:
 
@@ -26,9 +45,9 @@ KL2PEN is built using a modern and scalable tech stack:
    ```
 ##  Innovation Part
 
-KL2PEN is designed to close key gaps in existing job search platforms by offering features that are rarely—or never—provided by mainstream platforms, delivering an all-in-one solution. This makes our platform uniquely innovative and inclusive.
+KL2PEN is designed to close key gaps in existing job search platforms by offering features that are rarely or never provided by mainstream platforms, delivering an all-in-one solution. This makes our platform uniquely innovative and inclusive.
 
-We support users at **every step of their job-seeking journey**—from discovery to preparation to application.
+We support users at **every step of their job-seeking journey**, from discovery to preparation to application.
 
 ### Key Innovations
 
@@ -39,7 +58,7 @@ We support users at **every step of their job-seeking journey**—from discovery
   KL2PEN provides AI-powered resume feedback to all users, offering personalized and actionable suggestions to improve their resumes.
 
 - **AI Mock Interview**  
-  A simulation feature that helps users practice interviews and receive intelligent feedback—empowering them to prepare confidently. This is a unique offering not found on other mainstream platforms.
+  A simulation feature that helps users practice interviews and receive intelligent feedback, empowering them to prepare confidently. This is a unique offering not found on other mainstream platforms.
 
 - **Real-Time AI Chatbox**  
   An interactive assistant that delivers instant answers, personalized advice, and career guidance to support users in real-time.
