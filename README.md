@@ -26,7 +26,7 @@ KL2PEN is built using a modern and scalable tech stack:
    ```
 ## Innovation Part
 
-KL2PEN is designed to close key gaps in existing job search platforms by offering features that are rarelyvor nevervprovided by mainstream platforms, providing an all-in-one solution. This makes our platform uniquely innovative and inclusive.
+KL2PEN is designed to close key gaps in existing job search platforms by offering features that are rarely or never provided by mainstream platforms, providing an all-in-one solution. This makes our platform uniquely innovative and inclusive.
 
 Key innovations include:
 
