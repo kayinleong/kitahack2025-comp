@@ -1,5 +1,18 @@
 # KL2PEN Job Seeking Website
 
+# Getting Started
+1. Clone the repository
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+3. Clone the .env.sample to .env
+4. Insert your Firebase and Gemini API Token in the .env file
+5. Run the app
+   ```bash
+   npm run dev
+   ```
+
 ## Overview of Technologies Used
 
 | Category             | Technology / Tool             | Purpose                                                                 |
@@ -19,7 +32,7 @@
 | **Cloud**            | Cloud Run & Cloud Run Revision| Builds and deploys cloud-based services                                |
 
 
-### Implementation
+## Implementation
 KL2PEN is built using a modern and scalable tech stack:
 
 - **Firebase**: Handles authentication (Firebase Auth), file storage (Cloud Storage), data management (Firestore), and app hosting (App Hosting).
@@ -30,19 +43,6 @@ KL2PEN is built using a modern and scalable tech stack:
 - **Next.js Server Actions**: Adds a security and validation layer before communicating with Firebase or Gemini.
 
 
-
-# Getting Started
-1. Clone the repository
-2. Install dependencies
-   ```bash
-   npm install
-   ```
-3. Clone the .env.sample to .env
-4. Insert your Firebase and Gemini API Token in the .env file
-5. Run the app
-   ```bash
-   npm run dev
-   ```
 ##  Innovation Part
 
 KL2PEN is designed to close key gaps in existing job search platforms by offering features that are rarely or never provided by mainstream platforms, delivering an all-in-one solution. This makes our platform uniquely innovative and inclusive.
