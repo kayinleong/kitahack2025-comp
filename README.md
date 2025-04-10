@@ -3,7 +3,7 @@
 ### Implementation
 KL2PEN is built using a modern and scalable tech stack:
 
-- **Firebase**: Handles authentication (Firebase Auth), file storage (Cloud Storage), data management (Firestore), and app hosting (AppHosting).
+- **Firebase**: Handles authentication (Firebase Auth), file storage (Cloud Storage), data management (Firestore), and app hosting (App Hosting).
 - **Gemini via Firebase GenKit**: Provides AI-powered services like resume analysis and career suggestions through a middleware approach.
 - **React + Next.js**: Powers the frontend with dynamic routing and SSR for optimal performance.
 - **Tailwind CSS & shadcn/ui**: Used for clean, responsive UI with accessible and consistent design components.
@@ -31,17 +31,17 @@ KL2PEN is designed to close key gaps in existing job search platforms by offerin
 Key innovations include:
 
 - **Job Swipe Interface**  
-  A mobile-friendly, intuitive swiping mechanism for discovering job opportunities, missing from most platforms except KL2PEN and Kabel.
+  A mobile-friendly, intuitive Tinder-like swiping interface for discovering job opportunities which is available only on KL2PEN and Kabel and not available on most mainstream platforms.
 
 - **AI Resume Commentor**  
-  Unlike LinkedIn’s premium-only feature, KL2PEN provides AI-powered resume feedback to all users at no cost.
+  KL2PEN provides AI-powered resume feedback to all users, helping them improve their resumes with actionable suggestions.
 
 - **AI Mock Interview**  
-  A simulation feature that helps users practice interviews and receive smart feedback, currently not available on other mainstream platforms.
+  A simulation feature that helps users practice interviews and receive intelligent feedback—empowering them to prepare confidently. This feature is currently not available on other mainstream platforms.
 
 - **Real-Time AI Chatbox**  
-  A conversational assistant that provides instant answers and career guidance, in which no competitor platform currently supports this.
-
+  A conversational assistant that provides instant answers and career guidance.
+  
 - **Industry Trends Insights**  
   We equip users with dynamic data on industry hiring trends and in-demand skills, helping them stay competitive on the job market.
 
