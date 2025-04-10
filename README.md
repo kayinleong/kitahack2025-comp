@@ -1,4 +1,4 @@
-# KL2PEN Job Seeking Website
+# KL2PEN All-In-One Career Platform
 
 # Getting Started
 1. Clone the repository
