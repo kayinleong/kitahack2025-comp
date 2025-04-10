@@ -13,7 +13,7 @@
    npm run dev
    ```
 
-## Overview of Technologies Used
+# Overview of Technologies Used
 
 | Category             | Technology / Tool             | Purpose                                                                 |
 |----------------------|-------------------------------|-------------------------------------------------------------------------|
@@ -32,7 +32,7 @@
 | **Cloud**            | Cloud Run & Cloud Run Revision| Builds and deploys cloud-based services                                |
 
 
-## Implementation
+# Implementation
 KL2PEN is built using a modern and scalable tech stack:
 
 - **Firebase**: Handles authentication (Firebase Auth), file storage (Cloud Storage), data management (Firestore), and app hosting (App Hosting).
@@ -43,13 +43,13 @@ KL2PEN is built using a modern and scalable tech stack:
 - **Next.js Server Actions**: Adds a security and validation layer before communicating with Firebase or Gemini.
 
 
-##  Innovation Part
+# Innovation Part
 
 KL2PEN is designed to close key gaps in existing job search platforms by offering features that are rarely or never provided by mainstream platforms, delivering an all-in-one solution. This makes our platform uniquely innovative and inclusive.
 
 We support users at **every step of their job-seeking journey**, from discovery to preparation to application.
 
-### Key Innovations
+## Key Innovations
 
 - **Job Swipe Interface**  
   A mobile-friendly, intuitive Tinder-like swiping interface for discovering job opportunities—available only on KL2PEN and Kabel, and not offered by most mainstream platforms.
@@ -66,12 +66,12 @@ We support users at **every step of their job-seeking journey**, from discovery 
 - **Industry Trends Insights**  
   KL2PEN equips users with data-driven insights into hiring trends and in-demand skills, helping them make informed career decisions and stay competitive.
 
-##  Challenges Faced
+# Challenges Faced
 
-### Optimization Issues
+## Optimization Issues
 We initially used the `fetch` JavaScript function to call the Gemini API directly. However, this approach quickly became messy and hard to maintain, especially when sharing the code across team members. To resolve this, we removed the direct API calls and replaced them with Firebase GenKit, which provides a ready-made and scalable solution. This decision significantly reduced our codebase—from nearly 500 lines to under 100—and improved maintainability and readability.
 
-### Continuous Deployment
+## Continuous Deployment
 We also encountered difficulties setting up continuous deployment. Our goal was to automatically deploy the website whenever there were new commits to the `main` branch. Manually writing and testing a GitHub Actions workflow for CI/CD was time-consuming and prone to errors. To simplify the process, we switched to **Firebase AppHosting**, which offers automatic CI/CD integration with GitHub. This allowed us to deploy the site seamlessly without manual intervention, saving development time and effort.
 
 
